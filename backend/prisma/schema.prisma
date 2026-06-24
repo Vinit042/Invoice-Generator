@@ -1,0 +1,145 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  companyName String
+  username    String     @unique
+  password    String
+  createdAt   DateTime   @default(now())
+  settings    Settings?
+  customers   Customer[]
+  invoices    Invoice[]
+  formats     InvoiceFormat[]
+}
+
+model Settings {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  companyName    String?
+  logo           String?
+  gstNumber      String?
+  panNumber      String?
+  address        String? @db.Text
+  email          String?
+  phone          String?
+  bankName       String?
+  accountNumber  String?
+  ifscCode       String?
+  branchName     String?
+  invoicePrefix  String? @default("BGS")
+  financialYear  String? @default("26-27")
+  state          String? @default("Maharashtra")
+  stateCode      String? @default("27")
+  signature      String?
+  terms          String? @db.Text
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  customerName String
+  companyName  String?
+  gstNumber    String?
+  phone        String?
+  email        String?
+  address      String?   @db.Text
+  state        String?
+  stateCode    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+}
+
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  customerId    Int?
+  invoiceNumber String
+  invoiceDate   DateTime
+  supplyDate    DateTime?
+  placeOfSupply String?
+  state         String?
+  stateCode     String?
+  customerName  String?
+  customerAddress String?   @db.Text
+  customerGst   String?
+  customerState String?
+  customerStateCode String?
+  subtotal      Float         @default(0)
+  cgst          Float         @default(0)
+  sgst          Float         @default(0)
+  igst          Float         @default(0)
+  totalTax      Float         @default(0)
+  grandTotal    Float         @default(0)
+  amountInWords String?
+  status        InvoiceStatus @default(DRAFT)
+  terms         String?       @db.Text
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  branchName    String?
+  footerNote    String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items         InvoiceItem[]
+
+  @@unique([userId, invoiceNumber])
+}
+
+model InvoiceItem {
+  id           Int     @id @default(autoincrement())
+  invoiceId    Int
+  description  String  @db.Text
+  sacCode      String?
+  rate         Float   @default(0)
+  discount     Float   @default(0)
+  taxableValue Float   @default(0)
+  cgstRate     Float   @default(0)
+  cgstAmount   Float   @default(0)
+  sgstRate     Float   @default(0)
+  sgstAmount   Float   @default(0)
+  igstRate     Float   @default(0)
+  igstAmount   Float   @default(0)
+  total        Float   @default(0)
+  invoice      Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  CANCELLED
+}
+
+model InvoiceFormat {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  name          String
+  placeOfSupply String?
+  state         String?
+  stateCode     String?
+  items         Json
+  terms         String?  @db.Text
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  branchName    String?
+  footerNote    String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+}
