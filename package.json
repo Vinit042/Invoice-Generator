@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "BGS GST Invoice Generator",
   "scripts": {
-    "build": "cd frontend && npm install && npx vite build && cp -r dist/* ../backend/public/",
+    "build": "cd frontend && npm install && ./node_modules/.bin/vite build && cp -r dist/* ../backend/public/",
     "start": "cd backend && node server.js",
     "postinstall": "cd backend && npm install"
   }
