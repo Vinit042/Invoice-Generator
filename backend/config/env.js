@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Use absolute path so .env is always found regardless of working directory
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 /**
  * Builds Prisma-compatible MySQL URL from separate env variables.
