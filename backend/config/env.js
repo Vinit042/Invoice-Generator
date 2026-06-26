@@ -13,7 +13,7 @@ const envPaths = [
 ];
 
 for (const envPath of envPaths) {
-  const result = dotenv.config({ path: envPath });
+  const result = dotenv.config({ path: envPath, override: true });
   if (!result.error) break;
 }
 
