@@ -5,8 +5,17 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Use absolute path so .env is always found regardless of working directory
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+// Try multiple locations — home dir persists across Hostinger deploys
+const envPaths = [
+  path.join(__dirname, '..', '.env'),                    // backend/.env (local dev)
+  path.join(process.env.HOME || '', '.env_bgs'),          // ~/.env_bgs (Hostinger persistent)
+  '/home/u120066322/.env_bgs',                            // absolute fallback
+];
+
+for (const envPath of envPaths) {
+  const result = dotenv.config({ path: envPath });
+  if (!result.error) break;
+}
 
 /**
  * Builds Prisma-compatible MySQL URL from separate env variables.
